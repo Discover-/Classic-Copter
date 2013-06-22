@@ -29,4 +29,5 @@ class Game
         GameState gameState;
         Player* player;
         std::vector<sf::RectangleShape> gameObjects;
+        long bestScore;
 };

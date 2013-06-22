@@ -49,8 +49,6 @@ void Player::Update()
 
         if (posY < 0.0f)
             posY = 0.1f;
-
-
     }
 
     sf::Sprite sprite(image);

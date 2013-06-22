@@ -24,6 +24,7 @@ Game::Game()
     isRunning = true;
     gameState = STATE_MAIN_MENU;
     showDebugInfo = true;
+    bestScore = 0;
 }
 
 Game::~Game()
@@ -53,6 +54,7 @@ int Game::Update()
 
     while (window.isOpen())
     {
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Event _event;
         window.clear(sf::Color::Black);
         fpsClock.restart();
@@ -168,6 +170,9 @@ int Game::Update()
                     {
                         if (WillCollision(player->GetPositionX(), player->GetPositionY(), 50.0f, 100.0f, (*itr).getPosition().x, (*itr).getPosition().y, (*itr).getGlobalBounds().height, (*itr).getGlobalBounds().width))
                         {
+                            if (player->GetPositionX() / 10.0f > bestScore)
+                                bestScore = long(player->GetPositionX() / 10.0f);
+
                             gameState = STATE_GAME_OVER;
                             break;
                         }
@@ -218,8 +223,6 @@ int Game::Update()
             text.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 300.0f);
             window.draw(text);
 
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-
             sf::Text text3("Mouse X: " + std::to_string(static_cast<long long>(mousePos.x)) + "\nMouse Y: " + std::to_string(static_cast<long long>(mousePos.y)), font, 15);
             text3.setColor(sf::Color::White);
             text3.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 265.0f);
@@ -230,6 +233,19 @@ int Game::Update()
             text2.setColor(sf::Color::White);
             text2.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 230.0f);
             window.draw(text2);
+        }
+
+        if (gameState != STATE_MAIN_MENU)
+        {
+            sf::Text textDistance("Distance: " + std::to_string(static_cast<long long>(player->GetPositionX() / 10.0f)), font, 30);
+            textDistance.setColor(sf::Color::White);
+            textDistance.setPosition(view.getCenter().x - 490.0f, view.getCenter().y + 245.0f);
+            window.draw(textDistance);
+
+            sf::Text textHighscore("Best Score: " + std::to_string(bestScore), font, 30);
+            textHighscore.setColor(sf::Color::White);
+            textHighscore.setPosition(view.getCenter().x + 280.0f, view.getCenter().y + 245.0f);
+            window.draw(textHighscore);
         }
 
         window.display();
