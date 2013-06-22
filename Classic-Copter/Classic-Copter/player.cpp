@@ -22,7 +22,7 @@ Player::Player(Game* _game, sf::RenderWindow* _window)
     game = _game;
     window = _window;
     posX = 300.0f;
-    posY = 300.0f;
+    posY = 100.0f;
     image.loadFromFile("Graphics/Character/helicopter_green.png");
 }
 
