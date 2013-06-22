@@ -11,6 +11,7 @@ enum GameState
     STATE_PAUSED        = 1,
     STATE_PAUSED_FOCUS  = 2,
     STATE_PLAYING       = 3,
+    STATE_GAME_OVER     = 4,
 };
 
 #define GAME_STATE_DRAW_GAME(x) (x == STATE_PAUSED || x == STATE_PAUSED_FOCUS || x == STATE_PLAYING)

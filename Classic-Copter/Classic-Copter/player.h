@@ -28,6 +28,7 @@ class Player
         float GetPositionY() { return posY; }
         void SetPositionX(float val) { posX = val; }
         void SetPositionY(float val) { posY = val; }
+        void SetPosition(float valX, float valY) { posX = valX; posY = valY; }
 
     private:
         Game* game;

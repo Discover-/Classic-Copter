@@ -21,8 +21,8 @@ Player::Player(Game* _game, sf::RenderWindow* _window)
 {
     game = _game;
     window = _window;
-    posX = 300.0f;
-    posY = 100.0f;
+    posX = 100.0f;
+    posY = 300.0f;
     image.loadFromFile("Graphics/Character/helicopter_green.png");
 }
 
@@ -33,11 +33,25 @@ Player::~Player()
 
 void Player::Update()
 {
-    posX += 6.0f;
-    posY += 3.0f;
+    if (game->GetGameState() == STATE_MAIN_MENU)
+        return;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        posY -= 6.0f;
+    if (game->GetGameState() == STATE_PLAYING)
+    {
+        posX += 6.0f;
+        posY += 3.0f;
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+            posY -= 6.0f;
+
+        if (posX < 0.0f)
+            posX = 0.1f;
+
+        if (posY < 0.0f)
+            posY = 0.1f;
+
+
+    }
 
     sf::Sprite sprite(image);
     sprite.setPosition(posX, posY);

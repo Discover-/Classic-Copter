@@ -22,6 +22,7 @@ Game::Game()
     player = NULL;
     isRunning = true;
     gameState = STATE_PLAYING;
+    showDebugInfo = true;
 }
 
 Game::~Game()
@@ -31,7 +32,7 @@ Game::~Game()
 
 int Game::Update()
 {
-    sf::Clock clockStart;
+    sf::Clock clockStart, fpsClock;
     clockStart.restart();
 
     sf::RenderWindow window(sf::VideoMode(1000, 600), "Classic-Copter C++ SFML", sf::Style::Close);
@@ -42,12 +43,16 @@ int Game::Update()
 
     LoadMap();
 
+    sf::Font font;
+    font.loadFromFile("Fonts/Market_Deco.ttf");
+
     std::cout << "Time in milliseconds taken to load everything before entering while-loop: " << clockStart.restart().asMilliseconds() << std::endl;
 
     while (window.isOpen())
     {
         sf::Event _event;
         window.clear(sf::Color::Black);
+        fpsClock.restart();
 
         while (window.pollEvent(_event))
         {
@@ -56,7 +61,57 @@ int Game::Update()
                 case sf::Event::Closed:
                     window.close();
                     break;
+                case sf::Event::LostFocus:
+                    if (gameState == STATE_PLAYING)
+                        gameState = STATE_PAUSED_FOCUS;
+                    break;
+                case sf::Event::GainedFocus:
+                    if (gameState == STATE_PAUSED_FOCUS)
+                        gameState = STATE_PLAYING;
+                    break;
+                case sf::Event::KeyReleased:
+                {
+                    switch (_event.key.code)
+                    {
+                        //! Turn on/off debug information
+                        case sf::Keyboard::F3:
+                        {
+                            showDebugInfo = !showDebugInfo;
+                            break;
+                        }
+                        //! Pause or un-pause game based on current gamestate.
+                        case sf::Keyboard::Escape:
+                        {
+                            if (gameState != STATE_MAIN_MENU)
+                                gameState = gameState == STATE_PLAYING ? STATE_PAUSED : STATE_PLAYING;
+                            else
+                                window.close();
+                            break;
+                        }
+                        //! Re-start game when pressing Enter after we died
+                        case sf::Keyboard::Return:
+                        {
+                            if (gameState == STATE_GAME_OVER)
+                            {
+                                player->SetPosition(100.0f, 300.0f);
+
+                                gameState = STATE_PLAYING;
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    break;
+                }
             }
+        }
+
+        if (gameState != STATE_MAIN_MENU)
+        {
+            for (std::vector<sf::RectangleShape>::iterator itr = gameObjects.begin(); itr != gameObjects.end(); ++itr)
+                if (IsInRange(player->GetPositionX(), (*itr).getPosition().x, player->GetPositionY(), (*itr).getPosition().y, 1000.0f))
+                    window.draw(*itr);
         }
 
         switch (gameState)
@@ -82,18 +137,73 @@ int Game::Update()
                 window.setView(view);
 
                 for (std::vector<sf::RectangleShape>::iterator itr = gameObjects.begin(); itr != gameObjects.end(); ++itr)
-                    if (IsInRange(player->GetPositionX(), (*itr).getPosition().x, player->GetPositionY(), (*itr).getPosition().y, 1000.0f))
-                        window.draw(*itr);
+                {
+                    if (IsInRange(player->GetPositionX(), (*itr).getPosition().x, player->GetPositionY(), (*itr).getPosition().y, 100.0f))
+                    {
+                        if (WillCollision(player->GetPositionX(), player->GetPositionY(), 50.0f, 100.0f, (*itr).getPosition().x, (*itr).getPosition().y, (*itr).getGlobalBounds().height, (*itr).getGlobalBounds().width))
+                        {
+                            gameState = STATE_GAME_OVER;
+                            break;
+                        }
+                    }
+                }
                 break;
             }
             case STATE_PAUSED:
             case STATE_PAUSED_FOCUS:
             {
+                player->Update();
+
+                sf::Text textPaused("Paused", font, 60);
+                textPaused.setColor(sf::Color::White);
+                textPaused.setPosition(view.getCenter().x - (textPaused.getLocalBounds().width / 2.0f), view.getCenter().y - (textPaused.getLocalBounds().height / 2.0f));
+                window.draw(textPaused);
+
+                sf::Text textPaused1(gameState == STATE_PAUSED_FOCUS ? "Focus on this screen again in order to continue" : "Press Escape in order to continue", font, 20);
+                textPaused1.setColor(sf::Color::White);
+                textPaused1.setPosition(view.getCenter().x - (textPaused1.getLocalBounds().width / 2.0f), view.getCenter().y - (textPaused1.getLocalBounds().height / 2.0f) + 60.0f);
+                window.draw(textPaused1);
+                break;
+            }
+            case STATE_GAME_OVER:
+            {
+                player->Update();
+
+                sf::Text textGameOver("Game Over!", font, 60);
+                textGameOver.setColor(sf::Color::White);
+                textGameOver.setPosition(view.getCenter().x - (textGameOver.getLocalBounds().width / 2.0f), view.getCenter().y - (textGameOver.getLocalBounds().height / 2.0f));
+                window.draw(textGameOver);
+
+                sf::Text textGameOver1("Press Enter to start over", font, 20);
+                textGameOver1.setColor(sf::Color::White);
+                textGameOver1.setPosition(view.getCenter().x - (textGameOver1.getLocalBounds().width / 2.0f), view.getCenter().y - (textGameOver1.getLocalBounds().height / 2.0f) + 60.0f);
+                window.draw(textGameOver1);
                 break;
             }
             default:
                 std::cout << "Unknown gamestate " << gameState << std::endl;
                 break;
+        }
+
+        if (showDebugInfo)
+        {
+            sf::Text text("Position X: " + std::to_string(static_cast<long long>(player->GetPositionX())) + "\nPosition Y: " + std::to_string(static_cast<long long>(player->GetPositionY())), font, 15);
+            text.setColor(sf::Color::White);
+            text.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 300.0f);
+            window.draw(text);
+
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+            sf::Text text3("Mouse X: " + std::to_string(static_cast<long long>(mousePos.x)) + "\nMouse Y: " + std::to_string(static_cast<long long>(mousePos.y)), font, 15);
+            text3.setColor(sf::Color::White);
+            text3.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 265.0f);
+            window.draw(text3);
+
+            float fps = 1 / fpsClock.getElapsedTime().asSeconds();
+            sf::Text text2("FPS: " + std::to_string(static_cast<long long>(fps)), font, 15);
+            text2.setColor(sf::Color::White);
+            text2.setPosition(view.getCenter().x + 375.0f, view.getCenter().y - 230.0f);
+            window.draw(text2);
         }
 
         window.display();

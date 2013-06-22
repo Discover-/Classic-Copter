@@ -25,7 +25,7 @@ class Game
         void ClearGameObjects() { gameObjects.clear(); }
 
     private:
-        bool isRunning;
+        bool isRunning, showDebugInfo;
         GameState gameState;
         Player* player;
         std::vector<sf::RectangleShape> gameObjects;
