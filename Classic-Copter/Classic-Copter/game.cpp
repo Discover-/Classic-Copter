@@ -235,6 +235,7 @@ int Game::Update()
         window.display();
     }
 
+    delete menu;
     return 0;
 }
 
