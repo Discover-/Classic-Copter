@@ -23,6 +23,7 @@ class Player
         ~Player();
 
         void Update();
+        void HandleTimers(sf::Int32 diff_time);
 
         float GetPositionX() { return posX; }
         float GetPositionY() { return posY; }
@@ -35,4 +36,5 @@ class Player
         sf::RenderWindow* window;
         float posX, posY;
         sf::Texture image;
+        sf::Int32 smokeTrailTimer;
 };

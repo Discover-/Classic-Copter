@@ -34,8 +34,7 @@ Game::~Game()
 
 int Game::Update()
 {
-    sf::Clock clockStart, fpsClock;
-    clockStart.restart();
+    sf::Clock clock, clockStart, fpsClock;
 
     sf::RenderWindow window(sf::VideoMode(1000, 600), "Classic-Copter C++ SFML", sf::Style::Close);
     window.setFramerateLimit(30);
@@ -58,6 +57,7 @@ int Game::Update()
         sf::Event _event;
         window.clear(sf::Color::Black);
         fpsClock.restart();
+        HandleTimers(clock.restart().asMilliseconds());
 
         while (window.pollEvent(_event))
         {
@@ -139,6 +139,10 @@ int Game::Update()
             for (std::vector<sf::RectangleShape>::iterator itr = gameObjects.begin(); itr != gameObjects.end(); ++itr)
                 if (IsInRange(player->GetPositionX(), (*itr).getPosition().x, player->GetPositionY(), (*itr).getPosition().y, 1000.0f))
                     window.draw(*itr);
+
+            for (std::vector<sf::RectangleShape>::iterator itr = trailOfSmoke.begin(); itr != trailOfSmoke.end(); ++itr)
+                if (IsInRange(player->GetPositionX(), (*itr).getPosition().x, player->GetPositionY(), (*itr).getPosition().y, 1000.0f))
+                    window.draw(*itr);
         }
 
         switch (gameState)
@@ -190,7 +194,7 @@ int Game::Update()
                 textPaused.setPosition(view.getCenter().x - (textPaused.getLocalBounds().width / 2.0f), view.getCenter().y - (textPaused.getLocalBounds().height / 2.0f));
                 window.draw(textPaused);
 
-                sf::Text textPaused1(gameState == STATE_PAUSED_FOCUS ? "Focus on this screen again in order to continue" : "Press Escape in order to continue", font, 20);
+                sf::Text textPaused1(gameState == STATE_PAUSED_FOCUS ? "Click on this screen again in order to continue" : "Press Escape in order to continue", font, 20);
                 textPaused1.setColor(sf::Color::White);
                 textPaused1.setPosition(view.getCenter().x - (textPaused1.getLocalBounds().width / 2.0f), view.getCenter().y - (textPaused1.getLocalBounds().height / 2.0f) + 60.0f);
                 window.draw(textPaused1);
@@ -244,7 +248,7 @@ int Game::Update()
 
             sf::Text textHighscore("Best Score: " + std::to_string(bestScore), font, 30);
             textHighscore.setColor(sf::Color::White);
-            textHighscore.setPosition(view.getCenter().x + 280.0f, view.getCenter().y + 245.0f);
+            textHighscore.setPosition(view.getCenter().x + 260.0f, view.getCenter().y + 245.0f);
             window.draw(textHighscore);
         }
 
@@ -309,4 +313,17 @@ void Game::LoadMap()
     }
 
     std::cout << "Time in milliseconds taken to load level.txt: " << _clock.restart().asMilliseconds() << std::endl;
+}
+
+void Game::HandleTimers(sf::Int32 diff_time)
+{
+    player->HandleTimers(diff_time);
+}
+
+void Game::AddSmokeTrail()
+{
+    sf::RectangleShape rectShape(sf::Vector2f(10.0f, 10.0f));
+    rectShape.setFillColor(sf::Color(255, 255, 255, 128));
+    rectShape.setPosition(player->GetPositionX() - 20.0f, player->GetPositionY() + 30.0f);
+    trailOfSmoke.push_back(rectShape);
 }

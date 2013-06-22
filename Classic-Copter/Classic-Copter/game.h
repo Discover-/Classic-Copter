@@ -24,10 +24,15 @@ class Game
         void AddGameObject(sf::RectangleShape gameobject) { gameObjects.push_back(gameobject); }
         void ClearGameObjects() { gameObjects.clear(); }
 
+        void HandleTimers(sf::Int32 diff_time);
+
+        void AddSmokeTrail();
+
     private:
         bool isRunning, showDebugInfo;
         GameState gameState;
         Player* player;
         std::vector<sf::RectangleShape> gameObjects;
+        std::vector<sf::RectangleShape> trailOfSmoke;
         long bestScore;
 };

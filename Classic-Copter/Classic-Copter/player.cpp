@@ -24,6 +24,7 @@ Player::Player(Game* _game, sf::RenderWindow* _window)
     posX = 100.0f;
     posY = 300.0f;
     image.loadFromFile("Graphics/Character/helicopter_green.png");
+    smokeTrailTimer = 200;
 }
 
 Player::~Player()
@@ -49,9 +50,26 @@ void Player::Update()
 
         if (posY < 0.0f)
             posY = 0.1f;
+
+        if (!smokeTrailTimer)
+        {
+            smokeTrailTimer = 200;
+            game->AddSmokeTrail();
+        }
     }
 
     sf::Sprite sprite(image);
     sprite.setPosition(posX, posY);
     window->draw(sprite);
+}
+
+void Player::HandleTimers(sf::Int32 diff_time)
+{
+    if (game->GetGameState() != STATE_PLAYING)
+        return;
+
+    if (diff_time >= smokeTrailTimer)
+        smokeTrailTimer = 0;
+    else
+        smokeTrailTimer -= diff_time;
 }
