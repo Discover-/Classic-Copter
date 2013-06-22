@@ -17,6 +17,13 @@ enum GameState
 #define GAME_STATE_DRAW_GAME(x) (x == STATE_PAUSED || x == STATE_PAUSED_FOCUS || x == STATE_PLAYING)
 #define GAME_STATE_PAUSED(x) (x == STATE_PAUSED || x == STATE_PAUSED_FOCUS)
 
+struct MenuButtonInfo
+{
+    int id;
+    sf::RectangleShape rectShape;
+    sf::Text textShape;
+};
+
 inline int urand(int min, int max)
 {
     return (rand() % (max - min + 1) + min);

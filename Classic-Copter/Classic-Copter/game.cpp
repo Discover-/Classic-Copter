@@ -16,12 +16,13 @@
 #include <SFML/Window.hpp>
 #include "game.h"
 #include "player.h"
+#include "menu.h"
 
 Game::Game()
 {
     player = NULL;
     isRunning = true;
-    gameState = STATE_PLAYING;
+    gameState = STATE_MAIN_MENU;
     showDebugInfo = true;
 }
 
@@ -45,6 +46,8 @@ int Game::Update()
 
     sf::Font font;
     font.loadFromFile("Fonts/Market_Deco.ttf");
+
+    Menu* menu = new Menu(this);
 
     std::cout << "Time in milliseconds taken to load everything before entering while-loop: " << clockStart.restart().asMilliseconds() << std::endl;
 
@@ -91,15 +94,37 @@ int Game::Update()
                         //! Re-start game when pressing Enter after we died
                         case sf::Keyboard::Return:
                         {
-                            if (gameState == STATE_GAME_OVER)
+                            switch (gameState)
                             {
-                                player->SetPosition(100.0f, 300.0f);
-
-                                gameState = STATE_PLAYING;
+                                case STATE_GAME_OVER:
+                                {
+                                    player->SetPosition(100.0f, 300.0f);
+                                    gameState = STATE_PLAYING;
+                                    break;
+                                }
+                                case STATE_MAIN_MENU:
+                                {
+                                    menu->PressedEnterOrMouse(window);
+                                    break;
+                                }
+                                default:
+                                    break;
                             }
                             break;
                         }
                         default:
+                            break;
+                    }
+                    break;
+                }
+                case sf::Event::MouseButtonPressed:
+                {
+                    switch (_event.mouseButton.button)
+                    {
+                        //! Select menu option
+                        case sf::Mouse::Left:
+                            if (gameState == STATE_MAIN_MENU)
+                                menu->PressedEnterOrMouse(window);
                             break;
                     }
                     break;
@@ -118,6 +143,7 @@ int Game::Update()
         {
             case STATE_MAIN_MENU:
             {
+                menu->Update(window);
                 break;
             }
             case STATE_PLAYING:
