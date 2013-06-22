@@ -96,11 +96,3 @@ void Menu::PressedEnterOrMouse(sf::RenderWindow &window)
             break;
     }
 }
-
-void Menu::UpdateSelection(bool moveNegative)
-{
-    if (moveNegative)
-        selectedOption -= 1;
-    else
-        selectedOption += 1;
-}
